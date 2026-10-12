@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Manager</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/sidebar') %>
+  <main class="main-content">
+    <%- include('partials/header') %>
+
+    <div class="card">
+      <h3>File Manager - Directori: /<%= currentPath %></h3>
+      
+      <div style="margin: 15px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+        <% if (parentPath !== null) { %>
+          <a href="/files?path=<%= encodeURIComponent(parentPath) %>" class="btn btn-primary" style="text-decoration:none;">Kembali</a>
+        <% } %>
+        <form action="/files/create" method="POST" style="display:flex; gap: 5px;">
+          <input type="hidden" name="currentPath" value="<%= currentPath %>">
+          <input type="text" name="name" placeholder="Nama file/folder baru" required style="padding: 8px; border-radius: 4px; border: 1px solid #334155; background: #020617; color: #fff;">
+          <select name="isFolder" style="padding: 8px; border-radius: 4px; border: 1px solid #334155; background: #020617; color: #fff;">
+            <option value="false">File</option>
+            <option value="true">Folder</option>
+          </select>
+          <button type="submit" class="btn btn-success">Buat</button>
+        </form>
+      </div>
+
+      <table class="file-list">
+        <thead>
+          <tr>
+            <th>Nama</th>
+            <th>Tipe</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% files.forEach(file => { %>
+            <tr>
+              <td>
+                <% if (file.isDirectory) { %>
+                  <a href="/files?path=<%= encodeURIComponent(file.path) %>" style="color: #38bdf8; text-decoration: none;"><%= file.name %>/</a>
+                <% } else { %>
+                  <%= file.name %>
+                <% } %>
+              </td>
+              <td><%= file.isDirectory ? 'Folder' : 'File' %></td>
+              <td>
+                <% if (!file.isDirectory) { %>
+                  <button class="btn btn-primary" onclick="openEditor('<%= file.path %>')">Edit</button>
+                <% } %>
+                <form action="/files/delete" method="POST" style="display:inline;">
+                  <input type="hidden" name="filePath" value="<%= file.path %>">
+                  <input type="hidden" name="currentPath" value="<%= currentPath %>">
+                  <button type="submit" class="btn btn-danger" onclick="return confirm('Hapus item ini?')">Hapus</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <div id="editorModal" class="modal">
+    <div class="modal-content">
+      <h3>Edit File</h3>
+      <form action="/files/save" method="POST">
+        <input type="hidden" name="currentPath" value="<%= currentPath %>">
+        <input type="hidden" id="editFilePath" name="filePath">
+        <textarea id="editContent" name="content"></textarea>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-danger" onclick="closeEditor()">Batal</button>
+          <button type="submit" class="btn btn-success">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openEditor(filePath) {
+      fetch('/files/read?path=' + encodeURIComponent(filePath))
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('editFilePath').value = filePath;
+          document.getElementById('editContent').value = data.content;
+          document.getElementById('editorModal').style.display = 'flex';
+        });
+    }
+
+    function closeEditor() {
+      document.getElementById('editorModal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

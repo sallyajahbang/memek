@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Server Minecraft</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/sidebar') %>
+  <main class="main-content">
+    <%- include('partials/header') %>
+    
+    <div class="card">
+      <h3>Status Server: <span style="color: <%= isRunning ? '#22c55e' : '#ef4444' %>"><%= isRunning ? 'AKTIF' : 'NONAKTIF' %></span></h3>
+      <div style="margin-top: 15px;">
+        <% if (!isRunning) { %>
+          <form action="/server/start" method="POST" style="display:inline;">
+            <button class="btn btn-success" type="submit">Jalankan Server</button>
+          </form>
+        <% } else { %>
+          <form action="/server/stop" method="POST" style="display:inline;">
+            <button class="btn btn-danger" type="submit">Hentikan Server</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Log Server</h3>
+      <pre class="terminal"><%= logs %></pre>
+    </div>
+  </main>
+</body>
+</html>
